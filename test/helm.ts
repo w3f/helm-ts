@@ -23,7 +23,7 @@ const tpl = new TplMock();
 
 const cmCfg = {
     'helm': 'https://w3f.github.io/components-ts/downloads/linux-amd64/helm/3.2.1/helm.tar.gz',
-    'kind': 'https://w3f.github.io/components-ts/downloads/linux-amd64/kind/0.8.1/kind.tar.gz'
+    'kind': 'https://w3f.github.io/components-ts/downloads/linux-amd64/kind/0.7.0/kind.tar.gz'
 };
 const cm = new Components('helm-test', cmCfg, logger);
 const cmd = new Cmd(logger);
