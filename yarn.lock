@@ -240,13 +240,6 @@
     semver "^7.3.2"
     tsutils "^3.17.1"
 
-"@w3f/cmd@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@w3f/cmd/-/cmd-0.2.0.tgz#012a2f7304c478b1988b232d4e935ae480ad320b"
-  integrity sha512-DnTFborCRLZ6Xx2iZ9ntOj+fn7P8RO8g0Xv4QY2rGsq6YyZT2qnnTeqFUJllS6o0z+hLrHXmnGtIQyfrrQ0zhw==
-  dependencies:
-    "@w3f/logger" "^0.3.0"
-
 "@w3f/cmd@^0.3.0":
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/@w3f/cmd/-/cmd-0.3.0.tgz#e2e84a8549c6fb11c6b5a3e373cea95ccb064f4e"
@@ -275,13 +268,13 @@
     axios "^0.19.2"
     fs-extra "^9.0.0"
 
-"@w3f/kind@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@w3f/kind/-/kind-0.2.0.tgz#5967ad9fdfc0c1a3ea50051da5c80e7b80aa08bd"
-  integrity sha512-vd77nDIPHuXdkNrfWnNF0dV7N65+c/ZTCXXsHr5Ham0uFKsDAzxE7NTTA0k5IcuGr6u8hHLnGI3SEr0si8hacw==
+"@w3f/kind@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@w3f/kind/-/kind-0.3.0.tgz#64796ffc6fcb304b2d73329cfc06011956055a78"
+  integrity sha512-gO0SeD8yNHwsMydcC7B+qqj3/LpwNqOFf+2FsrE5z+stlAWz2CrfuIbTkh0iBnyrLMrXc+lxSMg5bGQSEbfu5g==
   dependencies:
     "@kubernetes/client-node" "^0.11.2"
-    "@w3f/cmd" "^0.2.0"
+    "@w3f/cmd" "^0.3.0"
     "@w3f/logger" "^0.3.0"
 
 "@w3f/logger@^0.3.0":
