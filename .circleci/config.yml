@@ -3,9 +3,10 @@ version: 2
 jobs:
   test:
     docker:
-      - image: node:12.16.1-alpine3.11
+      - image: web3f/node-dind:v0.3.0
     steps:
       - checkout
+      - setup_remote_docker
       - run: yarn
       - run:
           name: Run tests
@@ -14,7 +15,7 @@ jobs:
 
   publishPackage:
     docker:
-      - image: node:12.16.1-alpine3.11
+      - image: web3f/node:v0.1.0
     steps:
       - checkout
 
