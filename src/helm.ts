@@ -26,9 +26,7 @@ export class Helm implements HelmManager {
             'upgrade',
             chartCfg.name,
             chartCfg.chart,
-            '--install',
-            '--kubeconfig',
-            this.kubeconfig
+            '--install'
         ];
         if (chartCfg.wait) {
             options.push('--wait');
@@ -43,6 +41,8 @@ export class Helm implements HelmManager {
     }
 
     private async exec(...args: string[]): Promise<string | number> {
+        args.push(`--kubeconfig=${this.kubeconfig}`);
+
         return this.cmd.exec(`${this.binaryPath}`, ...args);
     }
 }
