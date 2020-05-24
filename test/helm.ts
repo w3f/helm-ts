@@ -66,7 +66,8 @@ describe('Helm', () => {
             const chart = path.join(__dirname, 'charts', 'test');
             const chartCfg: ChartConfig = {
                 name: 'test',
-                chart
+                chart,
+                wait: true
             };
 
             await subject.install(chartCfg);

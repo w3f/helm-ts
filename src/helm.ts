@@ -22,15 +22,19 @@ export class Helm implements HelmManager {
     }
 
     async install(chartCfg: ChartConfig): Promise<string> {
-        const result = await this.exec(
+        const options = [
             'upgrade',
             chartCfg.name,
             chartCfg.chart,
             '--install',
             '--kubeconfig',
-            this.kubeconfig,
-            '--wait'
-        ) as string;
+            this.kubeconfig
+        ];
+        if (chartCfg.wait) {
+            options.push('--wait');
+        }
+
+        const result = await this.exec(...options) as string;
         return result;
     }
 
