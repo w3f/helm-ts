@@ -1,8 +1,18 @@
-import { TemplateData } from '@w3f/template';
+import { CmdManager } from '@w3f/cmd';
+import { Logger } from '@w3f/logger';
+import { TemplateManager } from '@w3f/template';
 
 export interface ChartValuesTemplate {
     path: string;
     data: string;
+}
+
+export interface HelmConfig {
+    binaryPath: string;
+    kubeconfig: string;
+    cmd: CmdManager;
+    tpl?: TemplateManager;
+    logger: Logger;
 }
 
 export interface ChartConfig {
@@ -13,6 +23,6 @@ export interface ChartConfig {
 }
 
 export interface HelmManager {
-    install(chart: ChartConfig): Promise<void>;
-    uninstall(name: string): Promise<void>;
+    install(chart: ChartConfig): Promise<string>;
+    uninstall(name: string): Promise<string>;
 }
