@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-deployment
+spec:
+  selector:
+    matchLabels:
+      app: test
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        app: test
+  spec:
+    containers:
+    - name: test
+      image: nginx:1.7.9
+      ports:
+      - containerPort: 80
