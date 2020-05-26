@@ -33,6 +33,9 @@ let k8sApi: k8s.CoreV1Api;
 let currentRelease = '';
 let currentNamespace = '';
 
+const localChart = path.join(__dirname, 'charts', 'test');
+const name = 'test';
+
 describe('Helm', () => {
     before(async () => {
         const binaryPath = await cm.path('helm');
@@ -64,18 +67,20 @@ describe('Helm', () => {
         await kind.stop();
     });
 
+    beforeEach(() => {
+        currentNamespace = 'default';
+    });
+
     afterEach(async () => {
         await subject.uninstall(currentRelease, currentNamespace);
     });
 
     it('should install/uninstall a local chart', async () => {
-        const chart = path.join(__dirname, 'charts', 'test');
-        const name = 'test';
         currentRelease = name;
-        currentNamespace = 'default';
+
         const chartCfg: ChartConfig = {
             name,
-            chart,
+            chart: localChart,
             wait: true
         };
 
@@ -94,7 +99,7 @@ describe('Helm', () => {
         const chart = 'bitnami/redis';
         const name = 'test-redis';
         currentRelease = name;
-        currentNamespace = 'default';
+
         const chartCfg: ChartConfig = {
             name,
             chart,
@@ -107,8 +112,6 @@ describe('Helm', () => {
         pods.body.items.length.should.eq(3);
     });
     it('should install charts in a namespace', async () => {
-        const chart = path.join(__dirname, 'charts', 'test');
-        const name = 'test';
         const ns = 'test';
 
         const nsManifest = {
@@ -124,7 +127,7 @@ describe('Helm', () => {
         currentNamespace = ns;
         const chartCfg: ChartConfig = {
             name,
-            chart,
+            chart: localChart,
             ns,
             wait: true
         };
@@ -134,5 +137,32 @@ describe('Helm', () => {
         const pods = await k8sApi.listNamespacedPod(ns, undefined, undefined, undefined, undefined, `release=${name}`);
         pods.body.items.length.should.eq(2);
     });
-    it('should allow to pass values');
+    it('should allow to pass values', async () => {
+        const replicas = 4;
+
+        currentRelease = name;
+
+        const tmpobj = tmp.fileSync();
+        const valuesTemplateContent = `replicas: {{ replicas }}`;
+        const valuesTemplatePath = tmpobj.name;
+        const valuesTemplateData = { replicas };
+        fs.writeFileSync(valuesTemplatePath, valuesTemplateContent);
+
+        const valuesTemplate = {
+            path: valuesTemplatePath,
+            data: valuesTemplateData
+        }
+
+        const chartCfg: ChartConfig = {
+            name,
+            chart: localChart,
+            wait: true,
+            valuesTemplate
+        };
+
+        await subject.install(chartCfg);
+
+        const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+        pods.body.items.length.should.eq(+replicas);
+    });
 });
