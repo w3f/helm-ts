@@ -106,6 +106,33 @@ describe('Helm', () => {
         const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
         pods.body.items.length.should.eq(3);
     });
-    it('should install charts in a namespace');
+    it('should install charts in a namespace', async () => {
+        const chart = path.join(__dirname, 'charts', 'test');
+        const name = 'test';
+        const ns = 'test';
+
+        const nsManifest = {
+            apiVersion: 'v1',
+            kind: 'Namespace',
+            metadata: {
+                name: ns
+            }
+        }
+        await k8sApi.createNamespace(nsManifest);
+
+        currentRelease = name;
+        currentNamespace = ns;
+        const chartCfg: ChartConfig = {
+            name,
+            chart,
+            ns,
+            wait: true
+        };
+
+        await subject.install(chartCfg);
+
+        const pods = await k8sApi.listNamespacedPod(ns, undefined, undefined, undefined, undefined, `release=${name}`);
+        pods.body.items.length.should.eq(2);
+    });
     it('should allow to pass values');
 });
