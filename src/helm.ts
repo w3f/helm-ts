@@ -2,7 +2,12 @@ import { CmdManager } from '@w3f/cmd';
 import { Logger } from '@w3f/logger';
 import { TemplateManager } from '@w3f/template';
 
-import { HelmManager, HelmConfig, ChartConfig } from './types';
+import {
+    HelmManager,
+    HelmConfig,
+    ChartConfig,
+    RepoList
+} from './types';
 
 export class Helm implements HelmManager {
     private readonly binaryPath: string;
@@ -38,6 +43,13 @@ export class Helm implements HelmManager {
 
     async uninstall(name: string): Promise<string> {
         return '';
+    }
+
+    async addRepos(repos: RepoList): Promise<void> {
+        for (let i = 0; i < repos.length; i++) {
+            await this.exec('repo', 'add', repos[i].name, repos[i].url);
+        }
+        await this.exec('repo', 'update');
     }
 
     private async exec(...args: string[]): Promise<string | number> {
