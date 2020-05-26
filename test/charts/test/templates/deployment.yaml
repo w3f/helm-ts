@@ -2,15 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: test-deployment
+  labels:
+    release: {{ .Release.Name }}
 spec:
   selector:
     matchLabels:
-      app: test
+      release: {{ .Release.Name }}
   replicas: {{ .Values.replicas }}
   template:
     metadata:
       labels:
-        app: test
+        release: {{ .Release.Name }}
     spec:
       containers:
       - name: test
