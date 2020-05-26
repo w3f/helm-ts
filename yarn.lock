@@ -284,10 +284,10 @@
   dependencies:
     winston "^3.2.1"
 
-"@w3f/template@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@w3f/template/-/template-0.3.0.tgz#091219f46112b46a9994d662d8d1ee4178c175e9"
-  integrity sha512-3Agh1nNLwsDqRP5wPqQEOITxsRVxWQVpbAd2fekJPgIyMC2UjxSgRI2GaaIBLFu5xk7JH+VseIyf0uO8TnRaiQ==
+"@w3f/template@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@w3f/template/-/template-0.4.0.tgz#7552aa053c2662dc318813f2a19005a4bd243dea"
+  integrity sha512-r1i5Xqbp88RCgZHq6ergAgV/F+/0EDaO5STWkcizZU4dIusEJwLVl+b2qiY724GmyA6TxhgvQg5yrIetiN/IVw==
   dependencies:
     fs-extra "^9.0.0"
     handlebars "^4.7.6"
