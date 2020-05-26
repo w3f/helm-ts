@@ -31,7 +31,7 @@ export interface ChartConfig {
 }
 
 export interface HelmManager {
-    install(chart: ChartConfig): Promise<string>;
-    uninstall(name: string): Promise<string>;
+    install(chart: ChartConfig): Promise<void>;
+    uninstall(name: string): Promise<void>;
     addRepos(repos: RepoList): Promise<void>;
 }

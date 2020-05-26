@@ -26,7 +26,7 @@ export class Helm implements HelmManager {
         this.cmd.setOptions({ verbose: true });
     }
 
-    async install(chartCfg: ChartConfig): Promise<string> {
+    async install(chartCfg: ChartConfig): Promise<void> {
         const options = [
             'upgrade',
             chartCfg.name,
@@ -37,12 +37,20 @@ export class Helm implements HelmManager {
             options.push('--wait');
         }
 
-        const result = await this.exec(...options) as string;
-        return result;
+        await this.exec(...options);
     }
 
-    async uninstall(name: string): Promise<string> {
-        return '';
+    async uninstall(name: string, ns?: string): Promise<void> {
+        if (!ns) {
+            ns = 'default';
+        }
+        const options = [
+            'del',
+            '-n',
+            ns,
+            name
+        ];
+        await this.exec(...options);
     }
 
     async addRepos(repos: RepoList): Promise<void> {

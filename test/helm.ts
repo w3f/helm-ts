@@ -30,6 +30,9 @@ let subject: Helm;
 let kind: Kind;
 let k8sApi: k8s.CoreV1Api;
 
+let currentRelease = '';
+let currentNamespace = '';
+
 describe('Helm', () => {
     before(async () => {
         const binaryPath = await cm.path('helm');
@@ -61,45 +64,48 @@ describe('Helm', () => {
         await kind.stop();
     });
 
-    describe('install', () => {
-        it('should install a local chart', async () => {
-            const chart = path.join(__dirname, 'charts', 'test');
-            const name = 'test'
-            const chartCfg: ChartConfig = {
-                name,
-                chart,
-                wait: true
-            };
-
-            await subject.install(chartCfg);
-
-            const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
-            pods.body.items.length.should.eq(2);
-        });
-        it('should install a remote chart', async () => {
-            const repos = [{
-                name: 'bitnami',
-                url: 'https://charts.bitnami.com/bitnami'
-            }];
-            await subject.addRepos(repos);
-
-            const chart = 'bitnami/redis';
-            const name = 'test-redis';
-            const chartCfg: ChartConfig = {
-                name,
-                chart,
-                wait: true
-            };
-
-            await subject.install(chartCfg);
-
-            const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
-            pods.body.items.length.should.eq(3);
-        });
-        it('should install charts in a namespace');
-        it('should allow to pass values');
+    afterEach(async () => {
+        await subject.uninstall(currentRelease, currentNamespace);
     });
-    describe('uninstall', () => {
-        it('should uninstall charts');
+
+    it('should install/uninstall a local chart', async () => {
+        const chart = path.join(__dirname, 'charts', 'test');
+        const name = 'test';
+        currentRelease = name;
+        currentNamespace = 'default';
+        const chartCfg: ChartConfig = {
+            name,
+            chart,
+            wait: true
+        };
+
+        await subject.install(chartCfg);
+
+        const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+        pods.body.items.length.should.eq(2);
     });
+    it('should install a remote chart', async () => {
+        const repos = [{
+            name: 'bitnami',
+            url: 'https://charts.bitnami.com/bitnami'
+        }];
+        await subject.addRepos(repos);
+
+        const chart = 'bitnami/redis';
+        const name = 'test-redis';
+        currentRelease = name;
+        currentNamespace = 'default';
+        const chartCfg: ChartConfig = {
+            name,
+            chart,
+            wait: true
+        };
+
+        await subject.install(chartCfg);
+
+        const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+        pods.body.items.length.should.eq(3);
+    });
+    it('should install charts in a namespace');
+    it('should allow to pass values');
 });
