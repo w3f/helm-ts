@@ -28,6 +28,7 @@ export interface ChartConfig {
     valuesTemplate?: ChartValuesTemplate;
     repo?: string;
     wait?: boolean;
+    ns?: string;
 }
 
 export interface HelmManager {

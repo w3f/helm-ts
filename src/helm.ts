@@ -36,6 +36,9 @@ export class Helm implements HelmManager {
         if (chartCfg.wait) {
             options.push('--wait');
         }
+        if (chartCfg.ns) {
+            options.push('--namespace', chartCfg.ns);
+        }
 
         await this.exec(...options);
     }
