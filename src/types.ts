@@ -1,6 +1,6 @@
 import { CmdManager } from '@w3f/cmd';
 import { Logger } from '@w3f/logger';
-import { TemplateManager } from '@w3f/template';
+import { TemplateManager, TemplateData } from '@w3f/template';
 
 export interface Repo {
     name: string;
@@ -11,7 +11,7 @@ export type RepoList = Array<Repo>;
 
 export interface ChartValuesTemplate {
     path: string;
-    data: string;
+    data: TemplateData;
 }
 
 export interface HelmConfig {

@@ -1,3 +1,5 @@
+import fs from 'fs-extra';
+import tmp from 'tmp';
 import { CmdManager } from '@w3f/cmd';
 import { Logger } from '@w3f/logger';
 import { TemplateManager } from '@w3f/template';
@@ -27,6 +29,7 @@ export class Helm implements HelmManager {
     }
 
     async install(chartCfg: ChartConfig): Promise<void> {
+        let valuesFile = '';
         const options = [
             'upgrade',
             chartCfg.name,
@@ -40,7 +43,21 @@ export class Helm implements HelmManager {
             options.push('--namespace', chartCfg.ns);
         }
 
-        await this.exec(...options);
+        if (chartCfg.valuesTemplate) {
+            const tmpobj = tmp.fileSync();
+            valuesFile = tmpobj.name;
+            this.tpl.create(chartCfg.valuesTemplate.path, valuesFile, chartCfg.valuesTemplate.data);
+            options.push('--values', valuesFile);
+        }
+
+        try {
+            await this.exec(...options);
+        } catch (e) {
+            if (valuesFile) {
+                fs.unlink(valuesFile);
+            }
+            throw (e);
+        }
     }
 
     async uninstall(name: string, ns?: string): Promise<void> {
