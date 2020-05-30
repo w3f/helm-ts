@@ -1,6 +1,7 @@
 import fs from 'fs-extra';
 import tmp from 'tmp';
-import { CmdManager } from '@w3f/cmd';
+import { CmdManager, Cmd } from '@w3f/cmd';
+import { Components } from '@w3f/components';
 import { Logger } from '@w3f/logger';
 import { TemplateManager } from '@w3f/template';
 
@@ -17,6 +18,25 @@ export class Helm implements HelmManager {
     private readonly kubeconfig: string;
     private readonly tpl: TemplateManager;
     private readonly logger: Logger
+
+    static async create(kubeconfig: string, logger: Logger): Promise<Helm> {
+        const cmCfg = {
+            'helm': 'https://w3f.github.io/components-ts/downloads/linux-amd64/helm/3.2.1/helm.tar.gz'
+        };
+        const cm = new Components('helm-test', cmCfg, logger);
+        const binaryPath = await cm.path('helm');
+
+        const cmd = new Cmd(logger);
+
+        const cfg = {
+            binaryPath,
+            kubeconfig,
+            cmd,
+            logger
+        };
+
+        return new Helm(cfg);
+    }
 
     constructor(helmCfg: HelmConfig) {
         this.binaryPath = helmCfg.binaryPath;

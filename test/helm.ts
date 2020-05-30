@@ -36,6 +36,21 @@ let currentNamespace = '';
 const localChart = path.join(__dirname, 'charts', 'test');
 const name = 'test';
 
+let kubeconfig: string;
+
+async function checkLocalInstall(subject: Helm): Promise<void> {
+    const chartCfg: ChartConfig = {
+        name,
+        chart: localChart,
+        wait: true
+    };
+
+    await subject.install(chartCfg);
+
+    const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+    pods.body.items.length.should.eq(2);
+}
+
 describe('Helm', () => {
     before(async () => {
         const binaryPath = await cm.path('helm');
@@ -47,7 +62,7 @@ describe('Helm', () => {
         const kubeconfigContent = await kind.kubeconfig() as string;
 
         const tmpobj = tmp.fileSync();
-        const kubeconfig = tmpobj.name;
+        kubeconfig = tmpobj.name;
         fs.writeFileSync(kubeconfig, kubeconfigContent);
 
         const helmCfg = {
@@ -75,94 +90,99 @@ describe('Helm', () => {
         await subject.uninstall(currentRelease, currentNamespace);
     });
 
-    it('should install/uninstall a local chart', async () => {
-        currentRelease = name;
+    describe('constructor', () => {
+        it('should install/uninstall a local chart', async () => {
+            currentRelease = name;
 
-        const chartCfg: ChartConfig = {
-            name,
-            chart: localChart,
-            wait: true
-        };
+            await checkLocalInstall(subject);
+        });
+        it('should install a remote chart', async () => {
+            const repos = [{
+                name: 'bitnami',
+                url: 'https://charts.bitnami.com/bitnami'
+            }];
+            await subject.addRepos(repos);
 
-        await subject.install(chartCfg);
+            const chart = 'bitnami/redis';
+            const name = 'test-redis';
+            currentRelease = name;
 
-        const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
-        pods.body.items.length.should.eq(2);
-    });
-    it('should install a remote chart', async () => {
-        const repos = [{
-            name: 'bitnami',
-            url: 'https://charts.bitnami.com/bitnami'
-        }];
-        await subject.addRepos(repos);
+            const chartCfg: ChartConfig = {
+                name,
+                chart,
+                wait: true
+            };
 
-        const chart = 'bitnami/redis';
-        const name = 'test-redis';
-        currentRelease = name;
+            await subject.install(chartCfg);
 
-        const chartCfg: ChartConfig = {
-            name,
-            chart,
-            wait: true
-        };
+            const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+            pods.body.items.length.should.eq(3);
+        });
+        it('should install charts in a namespace', async () => {
+            const ns = 'test';
 
-        await subject.install(chartCfg);
-
-        const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
-        pods.body.items.length.should.eq(3);
-    });
-    it('should install charts in a namespace', async () => {
-        const ns = 'test';
-
-        const nsManifest = {
-            apiVersion: 'v1',
-            kind: 'Namespace',
-            metadata: {
-                name: ns
+            const nsManifest = {
+                apiVersion: 'v1',
+                kind: 'Namespace',
+                metadata: {
+                    name: ns
+                }
             }
-        }
-        await k8sApi.createNamespace(nsManifest);
+            await k8sApi.createNamespace(nsManifest);
 
-        currentRelease = name;
-        currentNamespace = ns;
-        const chartCfg: ChartConfig = {
-            name,
-            chart: localChart,
-            ns,
-            wait: true
-        };
+            currentRelease = name;
+            currentNamespace = ns;
+            const chartCfg: ChartConfig = {
+                name,
+                chart: localChart,
+                ns,
+                wait: true
+            };
 
-        await subject.install(chartCfg);
+            await subject.install(chartCfg);
 
-        const pods = await k8sApi.listNamespacedPod(ns, undefined, undefined, undefined, undefined, `release=${name}`);
-        pods.body.items.length.should.eq(2);
+            const pods = await k8sApi.listNamespacedPod(ns, undefined, undefined, undefined, undefined, `release=${name}`);
+            pods.body.items.length.should.eq(2);
+        });
+        it('should allow to pass values', async () => {
+            const replicas = 4;
+
+            currentRelease = name;
+
+            const tmpobj = tmp.fileSync();
+            const valuesTemplateContent = `replicas: {{ replicas }}`;
+            const valuesTemplatePath = tmpobj.name;
+            const valuesTemplateData = { replicas };
+            fs.writeFileSync(valuesTemplatePath, valuesTemplateContent);
+
+            const valuesTemplate = {
+                path: valuesTemplatePath,
+                data: valuesTemplateData
+            }
+
+            const chartCfg: ChartConfig = {
+                name,
+                chart: localChart,
+                wait: true,
+                valuesTemplate
+            };
+
+            await subject.install(chartCfg);
+
+            const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+            pods.body.items.length.should.eq(+replicas);
+        });
     });
-    it('should allow to pass values', async () => {
-        const replicas = 4;
 
-        currentRelease = name;
+    describe('static factory', () => {
+        it('allows to create instances', async () => {
+            const subjectFromFactory = await Helm.create(kubeconfig, logger);
 
-        const tmpobj = tmp.fileSync();
-        const valuesTemplateContent = `replicas: {{ replicas }}`;
-        const valuesTemplatePath = tmpobj.name;
-        const valuesTemplateData = { replicas };
-        fs.writeFileSync(valuesTemplatePath, valuesTemplateContent);
+            subjectFromFactory.should.exist;
 
-        const valuesTemplate = {
-            path: valuesTemplatePath,
-            data: valuesTemplateData
-        }
+            currentRelease = name;
 
-        const chartCfg: ChartConfig = {
-            name,
-            chart: localChart,
-            wait: true,
-            valuesTemplate
-        };
-
-        await subject.install(chartCfg);
-
-        const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
-        pods.body.items.length.should.eq(+replicas);
+            await checkLocalInstall(subjectFromFactory);
+        });
     });
 });
