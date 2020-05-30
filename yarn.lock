@@ -268,13 +268,14 @@
     axios "^0.19.2"
     fs-extra "^9.0.0"
 
-"@w3f/kind@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@w3f/kind/-/kind-0.3.0.tgz#64796ffc6fcb304b2d73329cfc06011956055a78"
-  integrity sha512-gO0SeD8yNHwsMydcC7B+qqj3/LpwNqOFf+2FsrE5z+stlAWz2CrfuIbTkh0iBnyrLMrXc+lxSMg5bGQSEbfu5g==
+"@w3f/kind@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@w3f/kind/-/kind-1.1.1.tgz#5d196f49905c86b56782a0b9538611e16c171930"
+  integrity sha512-0BYh4QLKT7A/7T4o5cu/bFXZdzOS2OZf3aLsDVcDd6Ppohw3TJnKNakAswVpGSWmyySTcfohS9qPrNc4BEvKSA==
   dependencies:
     "@kubernetes/client-node" "^0.11.2"
     "@w3f/cmd" "^0.3.0"
+    "@w3f/components" "^0.4.0"
     "@w3f/logger" "^0.3.0"
 
 "@w3f/logger@^0.3.0":
