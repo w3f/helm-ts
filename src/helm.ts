@@ -70,6 +70,10 @@ export class Helm implements HelmManager {
             options.push('--values', valuesFile);
         }
 
+        if (chartCfg.version) {
+            options.push('--version', chartCfg.version);
+        }
+
         try {
             await this.exec(...options);
         } catch (e) {
