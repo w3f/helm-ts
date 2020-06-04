@@ -172,6 +172,31 @@ describe('Helm', () => {
             const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
             pods.body.items.length.should.eq(+replicas);
         });
+        it('should install a chart version', async () => {
+            const repos = [{
+                name: 'bitnami',
+                url: 'https://charts.bitnami.com/bitnami'
+            }];
+            await subject.addRepos(repos);
+
+            const chart = 'bitnami/redis';
+            const version = '10.6.5';
+            const name = 'test-redis';
+            currentRelease = name;
+
+            const chartCfg: ChartConfig = {
+                name,
+                chart,
+                wait: true,
+                version
+            };
+
+            await subject.install(chartCfg);
+
+            const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+
+            pods.body.items.length.should.eq(3);
+        });
     });
 
     describe('static factory', () => {
