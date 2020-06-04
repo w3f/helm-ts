@@ -29,6 +29,7 @@ export interface ChartConfig {
     repo?: string;
     wait?: boolean;
     ns?: string;
+    version?: string;
 }
 
 export interface HelmManager {
