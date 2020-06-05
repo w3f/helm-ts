@@ -27,6 +27,7 @@ const cm = new Components('helm-test', cmCfg, logger);
 const cmd = new Cmd(logger);
 
 let subject: Helm;
+let subjectFromFactory: Helm;
 let kind: Kind;
 let k8sApi: k8s.CoreV1Api;
 
@@ -75,6 +76,35 @@ async function checkRemoteInstall(subject: Helm, version?: string): Promise<void
 
     const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
     pods.body.items.length.should.eq(3);
+}
+
+async function checkInstallWithValues(subject: Helm): Promise<void> {
+    const replicas = 4;
+
+
+
+    const tmpobj = tmp.fileSync();
+    const valuesTemplateContent = `replicas: {{ replicas }}`;
+    const valuesTemplatePath = tmpobj.name;
+    const valuesTemplateData = { replicas };
+    fs.writeFileSync(valuesTemplatePath, valuesTemplateContent);
+
+    const valuesTemplate = {
+        path: valuesTemplatePath,
+        data: valuesTemplateData
+    }
+
+    const chartCfg: ChartConfig = {
+        name,
+        chart: localChart,
+        wait: true,
+        valuesTemplate
+    };
+
+    await subject.install(chartCfg);
+
+    const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
+    pods.body.items.length.should.eq(+replicas);
 }
 
 describe('Helm', () => {
@@ -154,32 +184,9 @@ describe('Helm', () => {
             pods.body.items.length.should.eq(2);
         });
         it('should allow to pass values', async () => {
-            const replicas = 4;
-
             currentRelease = name;
 
-            const tmpobj = tmp.fileSync();
-            const valuesTemplateContent = `replicas: {{ replicas }}`;
-            const valuesTemplatePath = tmpobj.name;
-            const valuesTemplateData = { replicas };
-            fs.writeFileSync(valuesTemplatePath, valuesTemplateContent);
-
-            const valuesTemplate = {
-                path: valuesTemplatePath,
-                data: valuesTemplateData
-            }
-
-            const chartCfg: ChartConfig = {
-                name,
-                chart: localChart,
-                wait: true,
-                valuesTemplate
-            };
-
-            await subject.install(chartCfg);
-
-            const pods = await k8sApi.listNamespacedPod('default', undefined, undefined, undefined, undefined, `release=${name}`);
-            pods.body.items.length.should.eq(+replicas);
+            await checkInstallWithValues(subject);
         });
         it('should install a chart version', async () => {
             currentRelease = name;
@@ -189,14 +196,21 @@ describe('Helm', () => {
     });
 
     describe('static factory', () => {
-        it('allows to create instances', async () => {
-            const subjectFromFactory = await Helm.create(kubeconfig, logger);
+        before(async () => {
+            subjectFromFactory = await Helm.create(kubeconfig, logger);
 
             subjectFromFactory.should.exist;
+        });
 
+        it('should allow to install local charts', async () => {
             currentRelease = name;
 
             await checkLocalInstall(subjectFromFactory);
+        });
+        it('should allow to pass values', async () => {
+            currentRelease = name;
+
+            await checkInstallWithValues(subjectFromFactory);
         });
     });
 });
