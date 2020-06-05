@@ -3,7 +3,7 @@ import tmp from 'tmp';
 import { CmdManager, Cmd } from '@w3f/cmd';
 import { Components } from '@w3f/components';
 import { Logger } from '@w3f/logger';
-import { TemplateManager } from '@w3f/template';
+import { TemplateManager, Template } from '@w3f/template';
 
 import {
     HelmManager,
@@ -27,11 +27,12 @@ export class Helm implements HelmManager {
         const binaryPath = await cm.path('helm');
 
         const cmd = new Cmd(logger);
-
+        const tpl = new Template();
         const cfg = {
             binaryPath,
             kubeconfig,
             cmd,
+            tpl,
             logger
         };
 

@@ -81,8 +81,6 @@ async function checkRemoteInstall(subject: Helm, version?: string): Promise<void
 async function checkInstallWithValues(subject: Helm): Promise<void> {
     const replicas = 4;
 
-
-
     const tmpobj = tmp.fileSync();
     const valuesTemplateContent = `replicas: {{ replicas }}`;
     const valuesTemplatePath = tmpobj.name;
