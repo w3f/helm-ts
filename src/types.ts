@@ -36,4 +36,10 @@ export interface HelmManager {
     install(chart: ChartConfig): Promise<void>;
     uninstall(name: string): Promise<void>;
     addRepos(repos: RepoList): Promise<void>;
+    template(chart: ChartConfig): Promise<string>;
+}
+
+export enum HelmAction {
+    Install = 'install',
+    Template = 'template'
 }

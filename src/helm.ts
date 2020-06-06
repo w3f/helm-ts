@@ -8,6 +8,7 @@ import { TemplateManager, Template } from '@w3f/template';
 import {
     HelmManager,
     HelmConfig,
+    HelmAction,
     ChartConfig,
     RepoList
 } from './types';
@@ -50,39 +51,7 @@ export class Helm implements HelmManager {
     }
 
     async install(chartCfg: ChartConfig): Promise<void> {
-        let valuesFile = '';
-        const options = [
-            'upgrade',
-            chartCfg.name,
-            chartCfg.chart,
-            '--install'
-        ];
-        if (chartCfg.wait) {
-            options.push('--wait');
-        }
-        if (chartCfg.ns) {
-            options.push('--namespace', chartCfg.ns);
-        }
-
-        if (chartCfg.valuesTemplate) {
-            const tmpobj = tmp.fileSync();
-            valuesFile = tmpobj.name;
-            this.tpl.create(chartCfg.valuesTemplate.path, valuesFile, chartCfg.valuesTemplate.data);
-            options.push('--values', valuesFile);
-        }
-
-        if (chartCfg.version) {
-            options.push('--version', chartCfg.version);
-        }
-
-        try {
-            await this.exec(...options);
-        } catch (e) {
-            if (valuesFile) {
-                fs.unlink(valuesFile);
-            }
-            throw (e);
-        }
+        await this.commonActions(HelmAction.Install, chartCfg);
     }
 
     async uninstall(name: string, ns?: string): Promise<void> {
@@ -103,6 +72,61 @@ export class Helm implements HelmManager {
             await this.exec('repo', 'add', repos[i].name, repos[i].url);
         }
         await this.exec('repo', 'update');
+    }
+
+    async template(chartCfg: ChartConfig): Promise<string> {
+        const result = await this.commonActions(HelmAction.Template, chartCfg);
+        return result as string;
+    }
+
+    private async commonActions(action: HelmAction, chartCfg: ChartConfig): Promise<string | number> {
+        let valuesFile = '';
+        let options: Array<string> = [];
+        switch (action) {
+            case HelmAction.Install:
+                options = [
+                    'upgrade',
+                    chartCfg.name,
+                    chartCfg.chart,
+                    '--install'
+                ];
+                break;
+            case HelmAction.Template:
+                options = [
+                    'template',
+                    chartCfg.name,
+                    chartCfg.chart,
+                ];
+                break;
+            default:
+                throw new Error(`Unknown Helm action: ${action}`);
+        }
+        if (chartCfg.wait) {
+            options.push('--wait');
+        }
+        if (chartCfg.ns) {
+            options.push('--namespace', chartCfg.ns);
+        }
+
+        if (chartCfg.valuesTemplate) {
+            const tmpobj = tmp.fileSync();
+            valuesFile = tmpobj.name;
+            this.tpl.create(chartCfg.valuesTemplate.path, valuesFile, chartCfg.valuesTemplate.data);
+            options.push('--values', valuesFile);
+        }
+
+        if (chartCfg.version) {
+            options.push('--version', chartCfg.version);
+        }
+
+        try {
+            return this.exec(...options);
+        } catch (e) {
+            if (valuesFile) {
+                fs.unlink(valuesFile);
+            }
+            throw (e);
+        }
     }
 
     private async exec(...args: string[]): Promise<string | number> {
