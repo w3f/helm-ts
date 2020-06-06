@@ -36,11 +36,10 @@ let currentRelease = '';
 let currentNamespace = '';
 
 const localChart = path.join(__dirname, 'charts', 'test');
-const name = 'test';
 
 let kubeconfig: string;
 
-async function checkLocalInstall(subject: Helm): Promise<void> {
+async function checkLocalInstall(subject: Helm, name: string): Promise<void> {
     const chartCfg: ChartConfig = {
         name,
         chart: localChart,
@@ -53,7 +52,7 @@ async function checkLocalInstall(subject: Helm): Promise<void> {
     pods.body.items.length.should.eq(2);
 }
 
-async function checkRemoteInstall(subject: Helm, version?: string): Promise<void> {
+async function checkRemoteInstall(subject: Helm, name: string, version?: string): Promise<void> {
     const repos = [{
         name: 'bitnami',
         url: 'https://charts.bitnami.com/bitnami'
@@ -61,7 +60,6 @@ async function checkRemoteInstall(subject: Helm, version?: string): Promise<void
     await subject.addRepos(repos);
 
     const chart = 'bitnami/redis';
-    const name = 'test-redis';
     currentRelease = name;
 
     const chartCfg: ChartConfig = {
@@ -79,7 +77,7 @@ async function checkRemoteInstall(subject: Helm, version?: string): Promise<void
     pods.body.items.length.should.eq(3);
 }
 
-async function checkInstallWithValues(subject: Helm): Promise<void> {
+async function checkInstallWithValues(subject: Helm, name: string): Promise<void> {
     const replicas = 5;
 
     const tmpobj = tmp.fileSync();
@@ -147,14 +145,18 @@ describe('Helm', () => {
                 await subject.uninstall(currentRelease, currentNamespace);
             });
             it('should install/uninstall a local chart', async () => {
+                const name = 'test-constructor-local';
+
                 currentRelease = name;
 
-                await checkLocalInstall(subject);
+                await checkLocalInstall(subject, name);
             });
             it('should install a remote chart', async () => {
+                const name = 'test-constructor-remote';
+
                 currentRelease = name;
 
-                await checkRemoteInstall(subject);
+                await checkRemoteInstall(subject, name);
             });
             it('should install charts in a namespace', async () => {
                 const ns = 'test';
@@ -167,6 +169,8 @@ describe('Helm', () => {
                     }
                 }
                 await k8sApi.createNamespace(nsManifest);
+
+                const name = 'test-constructor-namespace';
 
                 currentRelease = name;
                 currentNamespace = ns;
@@ -183,18 +187,24 @@ describe('Helm', () => {
                 pods.body.items.length.should.eq(2);
             });
             it('should allow to pass values', async () => {
+                const name = 'test-constructor-values';
+
                 currentRelease = name;
 
-                await checkInstallWithValues(subject);
+                await checkInstallWithValues(subject, name);
             });
             it('should install a chart version', async () => {
+                const name = 'test-constructor-version';
+
                 currentRelease = name;
 
-                await checkRemoteInstall(subject, '10.6.5');
+                await checkRemoteInstall(subject, name, '10.6.5');
             });
         });
         describe('template', () => {
             it('should return the templated resources as a string', async () => {
+                const name = 'test-template';
+
                 const chartCfg: ChartConfig = {
                     name,
                     chart: localChart
@@ -220,14 +230,18 @@ describe('Helm', () => {
         });
 
         it('should allow to install local charts', async () => {
+            const name = 'test-factory-local';
+
             currentRelease = name;
 
-            await checkLocalInstall(subjectFromFactory);
+            await checkLocalInstall(subjectFromFactory, name);
         });
         it('should allow to pass values', async () => {
+            const name = 'test-factory-values';
+
             currentRelease = name;
 
-            await checkInstallWithValues(subjectFromFactory);
+            await checkInstallWithValues(subjectFromFactory, name);
         });
     });
 });
