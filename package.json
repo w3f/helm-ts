@@ -1,6 +1,6 @@
 {
   "name": "@w3f/helm",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Helm manager",
   "repository": "git@github.com:w3f/helm-ts.git",
   "author": "W3F Infrastructure Team <devops@web3.foundation>",
