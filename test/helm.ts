@@ -247,7 +247,7 @@ describe('Helm', () => {
 
     describe('static factory, no params', () => {
         before(async () => {
-            subjectFromFactory = await Helm.create();
+            subjectFromFactory = await Helm.createBare();
 
             subjectFromFactory.setKubeconfig(kubeconfig);
 
@@ -258,14 +258,14 @@ describe('Helm', () => {
         });
 
         it('should allow to install local charts', async () => {
-            const name = 'test-factory-kc-logger-local';
+            const name = 'test-factory-no-params-local';
 
             currentRelease = name;
 
             await checkLocalInstall(subjectFromFactory, name);
         });
         it('should allow to pass values', async () => {
-            const name = 'test-factory-kc-logger-values';
+            const name = 'test-factory-no-params-values';
 
             currentRelease = name;
 
