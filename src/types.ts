@@ -37,6 +37,7 @@ export interface HelmManager {
     uninstall(name: string): Promise<void>;
     addRepos(repos: RepoList): Promise<void>;
     template(chart: ChartConfig): Promise<string>;
+    setKubeconfig(kubeconfig: string): void;
 }
 
 export enum HelmAction {

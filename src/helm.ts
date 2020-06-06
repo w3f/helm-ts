@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import tmp from 'tmp';
 import { CmdManager, Cmd } from '@w3f/cmd';
 import { Components } from '@w3f/components';
-import { Logger } from '@w3f/logger';
+import { Logger, createLogger } from '@w3f/logger';
 import { TemplateManager, Template } from '@w3f/template';
 
 import {
@@ -16,9 +16,15 @@ import {
 export class Helm implements HelmManager {
     private readonly binaryPath: string;
     private readonly cmd: CmdManager;
-    private readonly kubeconfig: string;
+    private kubeconfig: string;
     private readonly tpl: TemplateManager;
     private readonly logger: Logger
+
+    static async createBare(): Promise<Helm> {
+        const logger = createLogger();
+
+        return this.create('', logger);
+    }
 
     static async create(kubeconfig: string, logger: Logger): Promise<Helm> {
         const cmCfg = {
@@ -77,6 +83,10 @@ export class Helm implements HelmManager {
     async template(chartCfg: ChartConfig): Promise<string> {
         const result = await this.commonActions(HelmAction.Template, chartCfg);
         return result as string;
+    }
+
+    setKubeconfig(kubeconfig: string): void {
+        this.kubeconfig = kubeconfig;
     }
 
     private async commonActions(action: HelmAction, chartCfg: ChartConfig): Promise<string | number> {
