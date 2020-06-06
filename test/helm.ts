@@ -1,7 +1,8 @@
-import fs from 'fs-extra';
+import * as fs from 'fs-extra';
 import { should } from 'chai';
-import path from 'path';
-import tmp from 'tmp';
+import * as path from 'path';
+import * as tmp from 'tmp';
+import * as yaml from 'js-yaml';
 import { Cmd } from '@w3f/cmd';
 import { Components } from '@w3f/components';
 import { Kind } from '@w3f/kind';
@@ -79,7 +80,7 @@ async function checkRemoteInstall(subject: Helm, version?: string): Promise<void
 }
 
 async function checkInstallWithValues(subject: Helm): Promise<void> {
-    const replicas = 4;
+    const replicas = 5;
 
     const tmpobj = tmp.fileSync();
     const valuesTemplateContent = `replicas: {{ replicas }}`;
@@ -140,56 +141,71 @@ describe('Helm', () => {
         currentNamespace = 'default';
     });
 
-    afterEach(async () => {
-        await subject.uninstall(currentRelease, currentNamespace);
-    });
-
     describe('constructor', () => {
-        it('should install/uninstall a local chart', async () => {
-            currentRelease = name;
+        describe('install/uninstall', () => {
+            afterEach(async () => {
+                await subject.uninstall(currentRelease, currentNamespace);
+            });
+            it('should install/uninstall a local chart', async () => {
+                currentRelease = name;
 
-            await checkLocalInstall(subject);
-        });
-        it('should install a remote chart', async () => {
-            currentRelease = name;
+                await checkLocalInstall(subject);
+            });
+            it('should install a remote chart', async () => {
+                currentRelease = name;
 
-            await checkRemoteInstall(subject);
-        });
-        it('should install charts in a namespace', async () => {
-            const ns = 'test';
+                await checkRemoteInstall(subject);
+            });
+            it('should install charts in a namespace', async () => {
+                const ns = 'test';
 
-            const nsManifest = {
-                apiVersion: 'v1',
-                kind: 'Namespace',
-                metadata: {
-                    name: ns
+                const nsManifest = {
+                    apiVersion: 'v1',
+                    kind: 'Namespace',
+                    metadata: {
+                        name: ns
+                    }
                 }
-            }
-            await k8sApi.createNamespace(nsManifest);
+                await k8sApi.createNamespace(nsManifest);
 
-            currentRelease = name;
-            currentNamespace = ns;
-            const chartCfg: ChartConfig = {
-                name,
-                chart: localChart,
-                ns,
-                wait: true
-            };
+                currentRelease = name;
+                currentNamespace = ns;
+                const chartCfg: ChartConfig = {
+                    name,
+                    chart: localChart,
+                    ns,
+                    wait: true
+                };
 
-            await subject.install(chartCfg);
+                await subject.install(chartCfg);
 
-            const pods = await k8sApi.listNamespacedPod(ns, undefined, undefined, undefined, undefined, `release=${name}`);
-            pods.body.items.length.should.eq(2);
+                const pods = await k8sApi.listNamespacedPod(ns, undefined, undefined, undefined, undefined, `release=${name}`);
+                pods.body.items.length.should.eq(2);
+            });
+            it('should allow to pass values', async () => {
+                currentRelease = name;
+
+                await checkInstallWithValues(subject);
+            });
+            it('should install a chart version', async () => {
+                currentRelease = name;
+
+                await checkRemoteInstall(subject, '10.6.5');
+            });
         });
-        it('should allow to pass values', async () => {
-            currentRelease = name;
+        describe('template', () => {
+            it('should return the templated resources as a string', async () => {
+                const chartCfg: ChartConfig = {
+                    name,
+                    chart: localChart
+                };
 
-            await checkInstallWithValues(subject);
-        });
-        it('should install a chart version', async () => {
-            currentRelease = name;
+                const result = await subject.template(chartCfg);
 
-            await checkRemoteInstall(subject, '10.6.5');
+                const obj = yaml.safeLoad(result);
+
+                obj.metadata.labels.release.should.eq(name);
+            });
         });
     });
 
@@ -198,6 +214,9 @@ describe('Helm', () => {
             subjectFromFactory = await Helm.create(kubeconfig, logger);
 
             subjectFromFactory.should.exist;
+        });
+        afterEach(async () => {
+            await subject.uninstall(currentRelease, currentNamespace);
         });
 
         it('should allow to install local charts', async () => {
