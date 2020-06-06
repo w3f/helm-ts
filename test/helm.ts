@@ -219,7 +219,7 @@ describe('Helm', () => {
         });
     });
 
-    describe('static factory', () => {
+    describe('static factory, kubeconfig and logger params', () => {
         before(async () => {
             subjectFromFactory = await Helm.create(kubeconfig, logger);
 
@@ -230,14 +230,42 @@ describe('Helm', () => {
         });
 
         it('should allow to install local charts', async () => {
-            const name = 'test-factory-local';
+            const name = 'test-factory-kc-logger-local';
 
             currentRelease = name;
 
             await checkLocalInstall(subjectFromFactory, name);
         });
         it('should allow to pass values', async () => {
-            const name = 'test-factory-values';
+            const name = 'test-factory-kc-logger-values';
+
+            currentRelease = name;
+
+            await checkInstallWithValues(subjectFromFactory, name);
+        });
+    });
+
+    describe('static factory, no params', () => {
+        before(async () => {
+            subjectFromFactory = await Helm.create();
+
+            subjectFromFactory.setKubeconfig(kubeconfig);
+
+            subjectFromFactory.should.exist;
+        });
+        afterEach(async () => {
+            await subjectFromFactory.uninstall(currentRelease, currentNamespace);
+        });
+
+        it('should allow to install local charts', async () => {
+            const name = 'test-factory-kc-logger-local';
+
+            currentRelease = name;
+
+            await checkLocalInstall(subjectFromFactory, name);
+        });
+        it('should allow to pass values', async () => {
+            const name = 'test-factory-kc-logger-values';
 
             currentRelease = name;
 
