@@ -216,7 +216,7 @@ describe('Helm', () => {
             subjectFromFactory.should.exist;
         });
         afterEach(async () => {
-            await subject.uninstall(currentRelease, currentNamespace);
+            await subjectFromFactory.uninstall(currentRelease, currentNamespace);
         });
 
         it('should allow to install local charts', async () => {
