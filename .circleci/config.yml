@@ -4,6 +4,7 @@ jobs:
   test:
     docker:
       - image: web3f/node-dind:v0.3.0
+    resource_class: large
     steps:
       - checkout
       - setup_remote_docker
