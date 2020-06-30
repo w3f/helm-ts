@@ -7,7 +7,6 @@ import { Cmd } from '@w3f/cmd';
 import { Components } from '@w3f/components';
 import { Kind } from '@w3f/kind';
 import { createLogger } from '@w3f/logger';
-import { Template } from '@w3f/template';
 import * as k8s from '@kubernetes/client-node';
 
 import { Helm } from '../src/index';
@@ -18,7 +17,6 @@ should();
 const kc = new k8s.KubeConfig();
 
 const logger = createLogger();
-const tpl = new Template();
 
 const cmCfg = {
     'helm': 'https://w3f.github.io/components-ts/downloads/linux-amd64/helm/3.2.1/helm.tar.gz',
@@ -112,7 +110,6 @@ describe('Helm', () => {
         const helmCfg = {
             binaryPath,
             cmd,
-            tpl,
             logger,
             kubeconfig
         }
