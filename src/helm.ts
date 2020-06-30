@@ -1,9 +1,9 @@
 import fs from 'fs-extra';
 import tmp from 'tmp';
+import yaml from 'js-yaml';
 import { CmdManager, Cmd } from '@w3f/cmd';
 import { Components } from '@w3f/components';
 import { Logger, createLogger } from '@w3f/logger';
-import { TemplateManager, Template } from '@w3f/template';
 
 import {
     HelmManager,
@@ -17,7 +17,6 @@ export class Helm implements HelmManager {
     private readonly binaryPath: string;
     private readonly cmd: CmdManager;
     private kubeconfig: string;
-    private readonly tpl: TemplateManager;
     private readonly logger: Logger
 
     static async createBare(): Promise<Helm> {
@@ -34,12 +33,10 @@ export class Helm implements HelmManager {
         const binaryPath = await cm.path('helm');
 
         const cmd = new Cmd(logger);
-        const tpl = new Template();
         const cfg = {
             binaryPath,
             kubeconfig,
             cmd,
-            tpl,
             logger
         };
 
@@ -50,7 +47,6 @@ export class Helm implements HelmManager {
         this.binaryPath = helmCfg.binaryPath;
         this.cmd = helmCfg.cmd;
         this.kubeconfig = helmCfg.kubeconfig;
-        this.tpl = helmCfg.tpl;
         this.logger = helmCfg.logger;
 
         this.cmd.setOptions({ verbose: true });
@@ -118,10 +114,12 @@ export class Helm implements HelmManager {
             options.push('--namespace', chartCfg.ns);
         }
 
-        if (chartCfg.valuesTemplate) {
+        if (chartCfg.values) {
             const tmpobj = tmp.fileSync();
             valuesFile = tmpobj.name;
-            this.tpl.create(chartCfg.valuesTemplate.path, valuesFile, chartCfg.valuesTemplate.data);
+
+            fs.writeFileSync(valuesFile, yaml.safeDump(chartCfg.values));
+
             options.push('--values', valuesFile);
         }
 
