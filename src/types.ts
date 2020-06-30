@@ -1,6 +1,5 @@
 import { CmdManager } from '@w3f/cmd';
 import { Logger } from '@w3f/logger';
-import { TemplateManager, TemplateData } from '@w3f/template';
 
 export interface Repo {
     name: string;
@@ -9,23 +8,17 @@ export interface Repo {
 
 export type RepoList = Array<Repo>;
 
-export interface ChartValuesTemplate {
-    path: string;
-    data: TemplateData;
-}
-
 export interface HelmConfig {
     binaryPath: string;
     kubeconfig: string;
     cmd: CmdManager;
-    tpl?: TemplateManager;
     logger: Logger;
 }
 
 export interface ChartConfig {
     name: string;
     chart: string;
-    valuesTemplate?: ChartValuesTemplate;
+    values?: any;
     repo?: string;
     wait?: boolean;
     ns?: string;
