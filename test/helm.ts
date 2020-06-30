@@ -80,22 +80,13 @@ async function checkRemoteInstall(subject: Helm, name: string, version?: string)
 async function checkInstallWithValues(subject: Helm, name: string): Promise<void> {
     const replicas = 5;
 
-    const tmpobj = tmp.fileSync();
-    const valuesTemplateContent = `replicas: {{ replicas }}`;
-    const valuesTemplatePath = tmpobj.name;
-    const valuesTemplateData = { replicas };
-    fs.writeFileSync(valuesTemplatePath, valuesTemplateContent);
-
-    const valuesTemplate = {
-        path: valuesTemplatePath,
-        data: valuesTemplateData
-    }
+    const values = { replicas };
 
     const chartCfg: ChartConfig = {
         name,
         chart: localChart,
         wait: true,
-        valuesTemplate
+        values
     };
 
     await subject.install(chartCfg);
