@@ -69,9 +69,9 @@ export class Helm implements HelmManager {
         await this.exec(...options);
     }
 
-    async addRepos(repos: RepoList): Promise<void> {
+    async addRepos(repos: RepoList, isUpdateForced=false): Promise<void> {
         for (let i = 0; i < repos.length; i++) {
-            await this.exec('repo', 'add', repos[i].name, repos[i].url);
+          isUpdateForced ? await this.exec('repo', 'add', '--force-update', repos[i].name, repos[i].url) : await this.exec('repo', 'add', repos[i].name, repos[i].url);
         }
         await this.exec('repo', 'update');
     }
