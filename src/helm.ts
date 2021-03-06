@@ -27,7 +27,7 @@ export class Helm implements HelmManager {
 
     static async create(kubeconfig: string, logger: Logger): Promise<Helm> {
         const cmCfg = {
-            'helm': 'https://w3f.github.io/components-ts/downloads/linux-amd64/helm/3.2.1/helm.tar.gz'
+            'helm': 'https://w3f.github.io/components-ts/downloads/linux-amd64/helm/3.5.2/helm.tar.gz'
         };
         const cm = new Components('helm-test', cmCfg, logger);
         const binaryPath = await cm.path('helm');
